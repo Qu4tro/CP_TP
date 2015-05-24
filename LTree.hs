@@ -1,4 +1,3 @@
-
 -- (c) MP-I (1998/9-2006/7) and CP (2005/6-2014/5)
 
 module LTree where
@@ -12,7 +11,7 @@ data LTree a = Leaf a | Fork (LTree a, LTree a) deriving (Show, Eq)
 
 inLTree = either Leaf Fork
 
-outLTree :: LTree a -> Either a (LTree a,LTree a)
+outLTree :: LTree a -> Either a (LTree a, LTree a)
 outLTree (Leaf a)       = i1 a
 outLTree (Fork (t1,t2)) = i2 (t1,t2)
 
@@ -20,10 +19,13 @@ outLTree (Fork (t1,t2)) = i2 (t1,t2)
 
 recLTree f = id -|- (f >< f)
 
+cataLTree :: (Either a (b, b) -> b) -> LTree a -> b
 cataLTree a = a . (recLTree (cataLTree a)) . outLTree
 
+anaLTree :: (c -> Either a (c, c)) -> c -> LTree a
 anaLTree f = inLTree . (recLTree (anaLTree f) ) . f
 
+hyloLTree :: (Either a (b, b) -> b) -> (c -> Either a (c, c)) -> c -> b
 hyloLTree a c = cataLTree a . anaLTree c
 
 baseLTree g f = g -|- (f >< f)
@@ -57,12 +59,14 @@ tips = cataLTree (either singl conc)
 
 -- (4.3) Double factorial ------------------------------------------------------
 
+dfac :: Integral a => a -> a
 dfac 0 = 1
 dfac n = hyloLTree (either id mul) dfacd (1,n) where mul(x,y)=x*y
 
-dfacd(n,m) | n==m      = i1   n
-           | otherwise = i2   ((n,k),(k+1,m))
-                         where k = div (n+m) 2
+dfacd :: Integral t => (t, t) -> Either t ((t, t), (t, t))
+dfacd(n,m) | n == m    = i1 n
+           | otherwise = i2 ((n, k), (k + 1, m))
+                         where k = div (n + m) 2
 
 -- (4.4) Double square function ------------------------------------------------
 

@@ -52,7 +52,7 @@ countBTree = cataBTree (either (const 0) (succ . (uncurry (+)) . p2))
 
 -- (4.3) Serialization ---------------------------------------------------------
 
-inordt = cataBTree inord	           -- in-order traversal
+inordt = cataBTree inord           -- in-order traversal
 
 -- where
 
