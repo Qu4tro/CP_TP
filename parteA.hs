@@ -10,7 +10,11 @@ depth :: LTree a -> Integer
 depth = cataLTree (either one (succ . uncurry max))
 
 balance :: LTree a -> LTree a
-balance = undefined
+balance tree = anaLTree balanceGene (tips tree)
+
+balanceGene :: [a] -> Either a ([a], [a])
+balanceGene [x] = i1 x
+balanceGene xs  = i2 (splitAt (length xs `div` 2) xs)
 
 t = Fork (Fork (Leaf 10, 
                 Fork (Leaf 2,
@@ -37,7 +41,7 @@ half (n, m) = (div (m - n) 2) + n
 
 t1 = abpe(20,30)
 
-test03a = qsplit (4,30) == i2(17,((4,16),(18,30)))
+test03a = qsplit (4, 30) == i2(17,((4,16),(18,30)))
 test03b = qsplit (4,3) == i1()
 test03c = qsplit (0,0) == i1()
 test03d = qsplit (1,1) == Right (1,((1,0),(2,1)))
@@ -71,17 +75,21 @@ anaSList g = inSList . (recSList (anaSList g)) . g
 hyloSList :: (Either b (d, c) -> c) -> (a -> Either b (d, a)) -> a -> c
 hyloSList f g = cataSList f . anaSList g
 
-mgen :: Ord a => ([a], [a]) -> Either [a] (a, ([a], [a]))
-mgen = undefined
-
 test04a = let x = Cons(1,Sent "end") in inSList(outSList x) == x
 test04b = let x = i2("ola",Sent "2") in outSList(inSList x) == x
 test04 = test04a && test04b
 
+
+mgen :: Ord a => ([a], [a]) -> Either [a] (a, ([a], [a]))
+mgen ([], xs)      = i1 xs
+mgen (xs, [])      = i1 xs
+mgen ((x:xs), ys)  = i2 (x, (xs, ys))
+
 merge' :: Ord a => ([a], [a]) -> [a]
 merge' = hyloSList (either id cons) mgen
 
-test05a = mgen      ([0,2,5],[0,6]) == i2 (0,([2,5],[0,6]))
+
+test05a = mgen ([0,2,5],[0,6]) == i2 (0,([2,5],[0,6]))
 test05b = mgen ([0, 2, 5], []) == i1 [0,2,5]
 test05c = merge' ([],[0,6]) == [0,6]
 test05 = test05a && test05b && test05c
