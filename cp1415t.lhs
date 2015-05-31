@@ -790,72 +790,129 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Secção \ref{sec:LTree}}
 \begin{code}
 depth :: LTree a -> Integer
-depth = undefined
+depth = depth = cataLTree (either one (succ . uncurry max))
 
 balance :: LTree a -> LTree a
-balance = undefined
+balance = balance :: LTree a -> LTree a
+balance tree = anaLTree balanceGene (tips tree)
+
+balanceGene :: [a] -> Either a ([a], [a])
+balanceGene [x] = i1 x
+balanceGene xs  = i2 (splitAt (length xs `div` 2) xs)
 \end{code}
 
 \subsection*{Secção \ref{sec:BTree}}
 \begin{code}
 qsplit :: Integral a => (a, a) -> Either () (a, ((a, a), (a, a)))
-qsplit = undefined
+qsplit = anaBTree qsplit (n,m)
+
+qsplit :: Integral a => (a, a) -> Either () (a, ((a, a), (a, a)))
+qsplit (n, m) 
+    | n >  m     = i1 ()
+    | m == 0     = i1 ()
+    | m == n     = i2 (m, ((m, m - 1), (m + 1, m)))
+    | otherwise  = i2 (half (n, m), ((n, half (n, m) - 1), (half (n, m) + 1, m)))
+
+half :: Integral a => (a, a) -> a
+half (n, m) = (div (m - n) 2) + n
 \end{code}
 
 \subsection*{Secção \ref{sec:SList}}
 \begin{code}
 inSList :: Either a (a1, SList a1 a) -> SList a1 a
-inSList = undefined
+inSList = either Sent Cons
 
 outSList :: SList b a -> Either a (b, SList b a)
-outSList = undefined
+outSList = outSList (Sent b) = i1 b
+outSList (Cons (a, sl)) = i2 (a, sl)
 
 anaSList :: (c -> Either a (b, c)) -> c -> SList b a
-anaSList = undefined
+anaSList g = inSList . (recSList (anaSList g)) . g
 
 cataSList :: (Either b (a, d) -> d) -> SList a b -> d
-cataSList = undefined
+cataSList g = g . (recSList (cataSList g)) . outSList
 
 hyloSList :: (Either b (d, c) -> c) -> (a -> Either b (d, a)) -> a -> c
-hyloSList = undefined
+hyloSList f g = cataSList f . anaSList g
 
 mgen :: Ord a => ([a], [a]) -> Either [a] (a, ([a], [a]))
-mgen = undefined
+mgen = mgen ([], xs)      = i1 xs
+mgen (xs, [])      = i1 xs
+mgen ((x:xs), ys)  = i2 (x, (xs, ys))
+
+merge' :: Ord a => ([a], [a]) -> [a]
+merge' = hyloSList (either id cons) mgen
 \end{code}
 
 \subsection*{Secção \ref{sec:sierp}}
 
 \begin{code}
-inTLTree = undefined 
+inTLTree :: Either Tri (TLTree, (TLTree, TLTree)) -> TLTree
+inTLTree = either Tri joinTrees
 
-outTLTree = undefined
+joinTrees :: (TLTree, (TLTree, TLTree)) -> TLTree
+joinTrees (t1, (t2, t3)) = Nodo t1 t2 t3
 
-baseTLTree = undefined
+outTLTree :: TLTree -> Either Tri (TLTree, (TLTree, TLTree))
+outTLTree (Tri tri)       = i1 tri
+outTLTree (Nodo t1 t2 t3) = i2 (t1, (t2, t3))
 
-recTLTree = undefined
+baseTLTree g f = (g >< g) -|- (f >< (f >< f))
 
-cataTLTree = undefined
+recTLTree :: (a -> b) -> Either (c, d) (a, (a, a)) -> Either (c, d) (b, (b, b))
+recTLTree f = (id >< id) -|- (f >< (f >< f))
 
-anaTLTree f = undefined
+cataTLTree :: (Either Tri (a, (a, a)) -> a) -> TLTree -> a
+cataTLTree g = g . (recTLTree (cataTLTree g)) . outTLTree
 
-hyloTLTree a c = undefined
+anaTLTree :: (a -> Either Tri (a, (a, a))) -> a -> TLTree
+anaTLTree f = inTLTree . (recTLTree (anaTLTree f)) . f
 
-tipsTLTree = undefined
+hyloTLTree a c = cataTLTree a . anaTLTree c
 
-invTLTree = undefined
-
-depthTLTree = undefined
+sierpinski :: Tri -> Int -> [Tri]
+sierpinski t = apresentaSierp . (geraSierp t)
 
 geraSierp :: Tri -> Int -> TLTree Tri
-geraSierp = undefined
+geraSierp = geraSierp t 0 = Tri t      
+geraSierp ((x,y),s) n =
+     let s' = div s 2
+     in  Nodo
+           (geraSierp ((x,y), s') (n-1))
+           (geraSierp ((x+s',y), s') (n-1))
+           (geraSierp ((x,y+s'), s') (n-1))
+           
+apresentaSierp :: TLTree -> [Tri]
+apresentaSierp (Tri t      ) = [t]
+apresentaSierp (Nodo a b c)  = (apresentaSierp a)++(apresentaSierp b)++(apresentaSierp c)    
+
+tipsTLTree :: TLTree -> [Tri]
+tipsTLTree = cataTLTree (either singl concatenate)
+    where concatenate (a, (b, c)) = a ++ b ++ c
+
+invTLTree :: TLTree -> TLTree
+invTLTree = cataTLTree (either Tri invTuple)
+    where invTuple (t1, (t2, t3)) = Nodo t3 t2 t1
+   
+depthTLTree :: TLTree -> Integer
+depthTLTree = cataTLTree (either one (succ . max3)) 
+    where max3 (a, (b, c)) = max a (max b c)   
 
 countTLTree :: TLTree b -> Int
-countTLTree = undefined
+countTLTree = countTLTree = cataTLTree (either one add3)
+    where add3 (a, (b, c)) = a + b + c
 
-draw = render html where
-       html = rep dados
+draw = render html 
+    where html = rep dados
 
-rep = undefined
+render :: String -> IO ()
+render html = writeFile "_.html" html
+
+dados :: (Tri, Int)
+dados = (((0, 0), 32), 4)
+
+rep dados = x3dom (map drawTriangle (tipsTLTree (uncurry geraSierp dados)) ) 
+
 \end{code}
 \pdfout{%
 \begin{code}
@@ -865,15 +922,42 @@ data TLTree a = L a | N (TLTree a,(TLTree a,TLTree a)) deriving (Eq,Show)
 
 \subsection*{Secção \ref{sec:monads}}
 Defina
-\begin{code}
-gene = undefined
+\begin{code
+gene :: Either () (String, [String]) -> Dist [String]
+gene = (either empty transmitter)
 \end{code}
 e responda ao problema do enunciado aqui.
+
+pcataList :: (Either () (a, b) -> Dist b) -> [a] -> Dist b
+pcataList g = mfoldr (curry (g.i2)) ((g.i1) ()) where
+    mfoldr f d [] = d
+    mfoldr f d (a:x) = do { y <- mfoldr f d x ; f a y }
+    
+transmitter :: (String, [String]) -> Dist [String]
+transmitter ("stop", words) = D [("stop":words, 0.90), (words, 0.10)]
+transmitter (word,   words) = D [(  word:words, 0.95), (words, 0.05)]
+
+empty :: Monad m => () -> m [t]
+empty () = return []
+
+transmitir = (pcataList gene) . (++ ["stop"])    
 
 \subsection*{Secção \ref{sec:parBTreeMap}}
 Defina
 \begin{code}
-parBTreeMap = undefined
+parmap :: (a -> b) -> [a] -> Eval [b]
+parmap f [] = return []
+parmap f (a:lt) = do
+    a' <- rpar (f a)
+    lt' <- parmap f lt
+    return (a':lt')
+
+parBTreeMap :: (a -> b) -> (BTree a) -> Eval (BTree b)
+parBTreeMap f Empty                  = return Empty
+parBTreeMap f (Node (a, (bt1, bt2))) = do a'   <- rpar (f a)
+                                          bt1' <- parBTreeMap f bt1
+                                          bt2' <- parBTreeMap f bt2
+                                          return (Node (a', (bt1', bt2')))
 \end{code}
 e apresente aqui os resultados das suas experiências com essa função.
 
