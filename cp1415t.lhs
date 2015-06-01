@@ -986,11 +986,11 @@ e apresente aqui os resultados das suas experiências com essa função.
 \begin{verbatim}
 $ ./cp1415t exercise seq -N2 +RTS -s 2>&1 | grep Total           
     Total   time    0.915s  (  0.933s elapsed)
-                                $ ./cp1415t exercise par -N2 +RTS -s 2>&1 | grep Total           
-        Total   time    0.928s  (  0.933s elapsed)
-        \end{verbatim}
-        Na versão feita para a BTree, a versão paralela é cerca de 1.01x mais rápida |((frac 0.928 0.915))| 
-        que a sequencial.
+$ ./cp1415t exercise par -N2 +RTS -s 2>&1 | grep Total           
+    Total   time    0.928s  (  0.933s elapsed)
+\end{verbatim}
+Na versão feita para a BTree, a versão paralela é cerca de 1.01x mais rápida |((frac 0.928 0.915))| 
+que a sequencial.
 
 
     %----------------- Fim do anexo cpm soluções propostas -------------------------%
