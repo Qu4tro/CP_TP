@@ -81,10 +81,10 @@ dsq' n = (cataLTree (either id add) . fmap (\n->2*n-1) . (anaLTree dfacd)) (1,n)
 
 dsq 0 = 0
 dsq n = (hyloLTree (either id add) (fdfacd nthodd)) (1,n)
-	where	nthodd n = 2*n - 1 
-		fdfacd f (n,m) | n==m  = i1   (f n)
-			       | otherwise = i2   ((n,k),(k+1,m))
-					where k = div (n+m) 2
+    where nthodd n = 2*n - 1 
+          fdfacd f (n,m) | n==m  = i1   (f n)
+                         | otherwise = i2   ((n,k),(k+1,m))
+                         where k = div (n+m) 2
 
 -- (4.5) Fibonacci -------------------------------------------------------------
 

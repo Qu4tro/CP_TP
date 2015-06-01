@@ -52,10 +52,10 @@ invl = cataList (either nil snoc) where snoc(a,l) = l ++ [a]
 
 look :: Eq a => a -> [(a,b)] -> Maybe b
 look k = cataList (either nothing aux)
-	 where nothing = const Nothing
-               aux((a,b),r)
-                      | a == k    = Just b
-                      | otherwise = r
+    where nothing = const Nothing
+          aux((a,b),r)
+                | a == k    = Just b
+                | otherwise = r
 
 -- (4.4) Insertion sort --------------------------------------------------------
 

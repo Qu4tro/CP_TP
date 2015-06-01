@@ -204,7 +204,7 @@ t1 = abpe(20,30)
 \end{code}
 que será precisa na secção \ref{sec:parBTreeMap}.
 \begin{teste}
-Faça os testes seguintes:
+Faça os testes seguintes:\footnote{Foi adicionado uma função test03 que é a conjunção de todos os testes 3.}
 \begin{code}
 test03a = qsplit (4,30) == i2(17,((4,16),(18,30)))
 test03b = qsplit (4,3) == i1()
@@ -212,6 +212,8 @@ test03c = qsplit (0,0) == i1()
 test03d = qsplit (1,1) == Right (1,((1,0),(2,1)))
 test03e = balBTree t1 == True
 test03f = inordt t1 == [20..30]
+test03  = test03a && test03b && test03c && 
+          test03d && test03e && test03f
 \end{code}
 \end{teste}
 
@@ -228,6 +230,7 @@ Faça os testes seguintes:
 \begin{code}
 test04a = let x = Cons(1,Sent "end") in inSList(outSList x) == x
 test04b = let x = i2("ola",Sent "2") in outSList(inSList x) == x
+test04  = test04a && test04b
 \end{code}
 \end{teste}
 \item Derive os combinadores |cataSList|, |anaSList| e |hyloSList|,
@@ -240,9 +243,10 @@ para um dado gene |mgen| que deverá definir.
 \begin{teste}
 Faça os seguintes testes:
 \begin{code}
-test05a = mgen      ([0,2,5],[0,6]) == i2 (0,([2,5],[0,6]))
+test05a = mgen ([0,2,5],[0,6]) == i2 (0,([2,5],[0,6]))
 test05b = mgen ([0, 2, 5], []) == i1 [0,2,5]
 test05c = merge' ([],[0,6]) == [0,6]
+test05  = test05a && test05b && test05c
 \end{code}
 \end{teste}
 \end{enumerate}
@@ -287,10 +291,10 @@ type Point = (Int, Int)
 
 A estrutura recursiva de (uma representação finita de) um
 \sierp{triângulo de Sierpinski} é captada por uma árvore ternária,
-em que cada nó é um triângulo com os respectivos três sub-triângulos:
-\begin{spec}
-data TLTree = Tri Tri | Nodo TLTree TLTree TLTree
-\end{spec}
+em que cada nó é um triângulo com os respectivos três sub-triângulos: \footnote{Foi usada esta definição de TLTree em vez da que foi dada abaixo, porque o grupo começou a fazer com esta definição e só vimos a alternativa no final do trabalho.}
+\begin{code}
+data TLTree = Tri Tri | Nodo TLTree TLTree TLTree deriving (Eq, Show)
+\end{code}
 Nas folhas dessa árvore encontram-se os triângulos mais pequenos,
 todos da mesma dimensão, que deverão ser desenhados.
 Apenas estes conterão informação de carácter
@@ -298,10 +302,10 @@ geométrico, tendo os nós da árvore um papel exclusivamente estrutural.
 Portanto, a informação geométrica guardada em cada folha consiste nas
 coordenadas do vértice inferior esquerdo e no lado dos catetos do
 respectivo triângulo. A função
-\begin{spec}
+\begin{code}
 sierpinski :: Tri -> Int -> [Tri]
 sierpinski t = apresentaSierp . (geraSierp t)
-\end{spec}
+\end{code}
 recebe a informação do triângulo exterior e o número de níveis pretendido,
 que funciona como critério de paragem do processo de construção do fractal.
 O seu resultado é a lista de triângulos a desenhar.
@@ -347,13 +351,18 @@ apresentaSierp (Nodo a b c) = (apresentaSierp a)++(apresentaSierp b)++(apresenta
 \begin{code}
 ts = geraSierp tri 5 where tri = ((0,0),256)
 \end{code}
-e faça os testes seguintes:
+e faça os testes seguintes:\footnote{Foi adicionado uma função test03 que é a conjunção de todos os testes 3.}
 \begin{teste} Verifique a profundidade da árvore gerada e o respectivo número de triângulos:
 \begin{code}
 test06a = depthTLTree ts == 6
 test06b = countTLTree ts == 243
-test06c = countTLTree ts == length (tipsTLTree ts)
+test06c = countTLTree ts == genericLength (tipsTLTree ts)
 test06d = countTLTree ts == countTLTree (invTLTree ts)
+test06 = test06a && 
+         test06b &&   
+         test06c &&   
+         test06d
+
 \end{code}
 \end{teste}
 \end{enumerate}
@@ -388,7 +397,7 @@ dados = (((0,0), 32),4)
 isto é, centrado na origem, com lado 32 e 4 níveis de recursividade.
 No anexo \ref{sec:resolucao} sugere-se o recurso à função,
 \begin{code}
-render html = do { writeFile "_.html" html ; system "open _.html" }
+render html = do { writeFile "_.html" html ; system "chromium _.html" }
 \end{code}
 (adapte-a, se necessário) para visualizar o triângulo gerado num ``browser".
 Espera-se que o resultado final seja como o 
@@ -562,9 +571,9 @@ ser perfeita?
 
 Responda a todas estas perguntas encontrando |g| tal que
 \begin{code}
-transmitir = pcataList gene
+transmitir = (pcataList gene) . (++ ["stop"])
 \end{code}
-descreve o comportamento do aparelho.
+descreve o comportamento do aparelho.\footnote{Esta função foi modificado de modo a meter sempre um stop no final na mensagem automaticamente.}
 %
 \begin{teste}
 Faça o seguinte teste unitário da sua versão para |gene|:
@@ -687,10 +696,10 @@ main = getArgs >>= cond (not . null) exemp_or_exer errInvArgs
         exemp_or_exer = cond (((==) "exemplo") . head) exemp exer
         exemp = cond (((==) 2) . length) execExemp errInvArgs
         execExemp = cond isPar execExempPar execExempSeq
-        exer = cond (((==) 3) . length) execExer errInvArgs
-        execExer = cond isPar execExerPar execExerSeq
         execExempSeq = const (putStrLn . show . (map fib) $ [20..30])      
         execExempPar = const (putStrLn . show . runEval . (parmap fib) $ [20..30])
+        exer = cond (((==) 3) . length) execExer errInvArgs
+        execExer = cond isPar execExerPar execExerSeq
 \end{code}
 
 \section{Bibliotecas e código auxiliar}
@@ -701,10 +710,10 @@ errInvArgs = const $ putStrLn msgInvArgs
            msgInvArgs = "Invalid arguments"           
 
 execExerPar :: [String] -> IO ()
-execExerPar  = undefined
+execExerPar = const (putStrLn . show . runEval . (parBTreeMap fib) $ t1)
 
 execExerSeq :: [String] -> IO ()
-execExerSeq = undefined
+execExerSeq = const (putStrLn . show . (fmap fib) $ t1)
 
 isPar :: [String] -> Bool
 isPar = cond (((==) "par") . head . tail) (const True) (const False)
@@ -720,11 +729,11 @@ Defina-se a seguinte composição de funções
 x3dom = html . preamble . body . x3d . scene . items
 \end{code}
 para gerar um texto HTML que represente um objecto gráfico em \XFreedom.
-Esta função usa as seguintes funções auxiliares:
+Esta função usa as seguintes funções auxiliares:\footnote{Preamble foi modificado porque não conseguimos o que era pedido com a função preamble dada pelo professor.}
 \begin{code}
 html = tag "html" []
 
-preamble = headx `with` [title "CP/X3DOM generation",links,script]
+preamble rest = (headx $ concat [title "CP/X3DOM generation",links,script]) ++ rest
 
 body = tag "body" []
 
@@ -774,7 +783,7 @@ prime s = "'"++s++"'"
 box p col = (transform p . shapex . items) [ color col, ctag "box" [("size",prime "2,2,2")]]
 
 cone p col b h = (transform p . shapex . items)
-	 [ color col,
+    [ color col,
            ctag "cone" [("bottomRadius",prime (show b)), ("height",prime (show h))]]
 
 color c = appearance (ctag "material" [("diffuseColor",prime c)])
@@ -790,96 +799,203 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Secção \ref{sec:LTree}}
 \begin{code}
 depth :: LTree a -> Integer
-depth = undefined
+depth = cataLTree (either one (succ . uncurry max))
 
 balance :: LTree a -> LTree a
-balance = undefined
+balance = anaLTree balanceGene . tips
+
+balanceGene :: [a] -> Either a ([a], [a])
+balanceGene [x] = i1 x
+balanceGene xs = i2 (splitAt (length xs `div` 2) xs)
+
 \end{code}
 
 \subsection*{Secção \ref{sec:BTree}}
 \begin{code}
 qsplit :: Integral a => (a, a) -> Either () (a, ((a, a), (a, a)))
-qsplit = undefined
+qsplit (n, m)
+    | n > m      = i1 ()
+    | m == 0     = i1 ()
+    | otherwise  = i2 (mid, ((n, mid - 1), (mid + 1, m)))
+    where mid = avg2 (n, m)
+
+avg2 :: Integral a => (a, a) -> a
+avg2 = (`div` 2) . uncurry (+)
+
 \end{code}
 
 \subsection*{Secção \ref{sec:SList}}
 \begin{code}
 inSList :: Either a (a1, SList a1 a) -> SList a1 a
-inSList = undefined
+inSList = either Sent Cons
 
 outSList :: SList b a -> Either a (b, SList b a)
-outSList = undefined
+outSList (Sent b)       = i1 b
+outSList (Cons (a, sl)) = i2 (a, sl)
+
+recSList :: (a -> b) -> Either c (d, a) -> Either c (d, b)
+recSList f = id -|- (id >< f)
 
 anaSList :: (c -> Either a (b, c)) -> c -> SList b a
-anaSList = undefined
+anaSList g = inSList . (recSList (anaSList g)) . g
 
 cataSList :: (Either b (a, d) -> d) -> SList a b -> d
-cataSList = undefined
+cataSList g = g . (recSList (cataSList g)) . outSList
 
 hyloSList :: (Either b (d, c) -> c) -> (a -> Either b (d, a)) -> a -> c
-hyloSList = undefined
+hyloSList f g = cataSList f . anaSList g
 
 mgen :: Ord a => ([a], [a]) -> Either [a] (a, ([a], [a]))
-mgen = undefined
+mgen ([],     ys) = i1 ys
+mgen (xs,     []) = i1 xs
+mgen ((x:xs), ys) = i2 (x, (xs, ys))
 \end{code}
 
 \subsection*{Secção \ref{sec:sierp}}
 
 \begin{code}
-inTLTree = undefined 
 
-outTLTree = undefined
+inTLTree :: Either Tri (TLTree, (TLTree, TLTree)) -> TLTree
+inTLTree = either Tri joinTrees
 
-baseTLTree = undefined
+joinTrees :: (TLTree, (TLTree, TLTree)) -> TLTree
+joinTrees (t1, (t2, t3)) = Nodo t1 t2 t3
 
-recTLTree = undefined
+outTLTree :: TLTree -> Either Tri (TLTree, (TLTree, TLTree))
+outTLTree (Tri tri)       = i1 tri
+outTLTree (Nodo t1 t2 t3) = i2 (t1, (t2, t3))
 
-cataTLTree = undefined
+baseTLTree g f = (g >< g) -|- (f >< (f >< f))
 
-anaTLTree f = undefined
+recTLTree :: (a -> b) -> Either (c, d) (a, (a, a)) -> Either (c, d) (b, (b, b))
+recTLTree f = (id >< id) -|- (f >< (f >< f))
 
-hyloTLTree a c = undefined
+cataTLTree :: (Either Tri (a, (a, a)) -> a) -> TLTree -> a
+cataTLTree g = g . (recTLTree (cataTLTree g)) . outTLTree
 
-tipsTLTree = undefined
+anaTLTree :: (a -> Either Tri (a, (a, a))) -> a -> TLTree
+anaTLTree f = inTLTree . (recTLTree (anaTLTree f)) . f
 
-invTLTree = undefined
+hyloTLTree a c = cataTLTree a . anaTLTree c
 
-depthTLTree = undefined
+tipsTLTree :: TLTree -> [Tri]
+tipsTLTree = cataTLTree (either singl concatenate)
+    where concatenate (a, (b, c)) = a ++ b ++ c
 
-geraSierp :: Tri -> Int -> TLTree Tri
-geraSierp = undefined
+apresentaSierp = tipsTLTree
 
-countTLTree :: TLTree b -> Int
-countTLTree = undefined
+invTLTree :: TLTree -> TLTree
+invTLTree = cataTLTree (either Tri invTuple)
+    where invTuple (t1, (t2, t3)) = Nodo t3 t2 t1
+
+-- invTLTree :: TLTree -> TLTree
+-- invTLTree (Tri tri)       = Tri tri
+-- invTLTree (Nodo t1 t2 t3) = Nodo (invTLTree t3) (invTLTree t2) (invTLTree t1)
+
+depthTLTree :: TLTree -> Integer
+depthTLTree = cataTLTree (either one (succ . max3)) 
+    where max3 (a, (b, c)) = max a (max b c)
+
+countTLTree :: TLTree -> Integer
+countTLTree = cataTLTree (either one add3)
+    where add3 (a, (b, c)) = a + b + c
+
+geraSierp :: Tri -> Int -> TLTree 
+geraSierp t d = anaTLTree geneSierp (t, d)
+
+geneSierp :: (Tri, Int) -> Either Tri ((Tri, Int), ((Tri, Int), (Tri, Int)))
+geneSierp (t, 0) = i1 t
+geneSierp (t@((x, y), s), n) = i2 ((((x     , y), s'), (n - 1)), 
+                                  ((((x + s', y), s'), (n - 1)), 
+                                   (((x, y + s'), s'), (n - 1))))
+    where s' = s `div` 2
 
 draw = render html where
        html = rep dados
 
-rep = undefined
+rep = x3dom . map drawTriangle . tipsTLTree . uncurry geraSierp
 \end{code}
 \pdfout{%
-\begin{code}
-data TLTree a = L a | N (TLTree a,(TLTree a,TLTree a)) deriving (Eq,Show)
-\end{code}
 }%
 
 \subsection*{Secção \ref{sec:monads}}
 Defina
 \begin{code}
-gene = undefined
+gene :: Either () (String, [String]) -> Dist [String]
+gene = (either empty transmitter)
+
+transmitter :: (String, [String]) -> Dist [String]
+transmitter ("stop", words) = D [("stop":words, 0.90), (words, 0.10)]
+transmitter (  word, words) = D [(  word:words, 0.95), (words, 0.05)]
+
+empty :: () -> Dist [a]
+empty () = return []
+
+ataque = transmitir (words "Vamos atacar hoje")
+
 \end{code}
 e responda ao problema do enunciado aqui.
+
+\begin{Verbatim}[fontsize=\small]
+
+*Main> ataque 
+["Vamos","atacar","hoje","stop"]  77.2%
+       ["Vamos","atacar","hoje"]   8.6%        
+        ["atacar","hoje","stop"]   4.1%       
+       ["Vamos","atacar","stop"]   4.1%         
+         ["Vamos","hoje","stop"]   4.1%              
+              ["Vamos","atacar"]   0.5%                
+                ["Vamos","hoje"]   0.5%               
+               ["atacar","hoje"]   0.5%                
+                ["Vamos","stop"]   0.2%               
+               ["atacar","stop"]   0.2%                 
+                 ["hoje","stop"]   0.2%                      
+                      ["atacar"]   0.0%                       
+                       ["Vamos"]   0.0%                        
+                        ["hoje"]   0.0%                        
+                        ["stop"]   0.0%                              
+                              []   0.0%
+
+*Main> 
+\end{Verbatim}
+
+
+Qual a probabilidade de a palavra |"atacar"| da mensagem |words "Vamos atacar
+hoje"| se perder, isto é, o resultado da transmissão ser |["Vamos","hoje","stop"]|?
+\\ \textbf{4.1\%}
+
+E a de seguirem todas as palavras, mas faltar o |"stop"| no fim? 
+\\ \textbf{8.6\%}
+
+E a da transmissão ser perfeita?
+\\ \textbf{77.2\%}
+
+
 
 \subsection*{Secção \ref{sec:parBTreeMap}}
 Defina
 \begin{code}
-parBTreeMap = undefined
+parBTreeMap f Empty                  = return Empty
+parBTreeMap f (Node (a, (bt1, bt2))) = do a'   <- rpar (f a)
+                                          bt1' <- parBTreeMap f bt1
+                                          bt2' <- parBTreeMap f bt2
+                                          return (Node (a', (bt1', bt2')))
 \end{code}
 e apresente aqui os resultados das suas experiências com essa função.
 
-%----------------- Fim do anexo cpm soluções propostas -------------------------%
+\begin{verbatim}
+$ ./cp1415t exercise seq -N2 +RTS -s 2>&1 | grep Total           
+    Total   time    0.915s  (  0.933s elapsed)
+                                $ ./cp1415t exercise par -N2 +RTS -s 2>&1 | grep Total           
+        Total   time    0.928s  (  0.933s elapsed)
+        \end{verbatim}
+        Na versão feita para a BTree, a versão paralela é cerca de 1.01x mais rápida |((frac 0.928 0.915))| 
+        que a sequencial.
 
-%----------------- Índice remissivo (exige makeindex) -------------------------%
+
+    %----------------- Fim do anexo cpm soluções propostas -------------------------%
+
+    %----------------- Índice remissivo (exige makeindex) -------------------------%
 
 \printindex
 
